@@ -6,13 +6,17 @@ use tracing_mock::{expect, subscriber};
 async fn repro_should_fail() {
     let (subscriber, handle) = subscriber_mock();
 
-    {
+    let join_handle = {
         let _guard = tracing::subscriber::set_default(subscriber);
-        tokio::spawn(async {
+        let join_handle = tokio::spawn(async {
             tracing::error!("real message");
         });
         tokio::task::yield_now().await;
-    }
+        join_handle
+    };
+
+    // If `tokio-mock` assertions fail, this will panic
+    join_handle.await.unwrap();
 
     handle.assert_finished();
 }
