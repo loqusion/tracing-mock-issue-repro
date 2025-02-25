@@ -1,6 +1,4 @@
-use std::fmt::Debug;
-
-use tracing::Subscriber;
+use tracing::{Level, Subscriber};
 use tracing_mock::{expect, subscriber};
 
 #[tokio::test]
@@ -34,21 +32,6 @@ async fn fails_successfully() {
 
 fn subscriber_mock() -> (impl Subscriber, subscriber::MockHandle) {
     subscriber::mock()
-        .event(
-            expect::event()
-                .with_fields(expect::field("message").with_value(&debug_value("not real message"))),
-        )
+        .event(expect::event().at_level(Level::WARN))
         .run_with_handle()
-}
-
-fn debug_value(message: impl Into<String>) -> tracing::field::DebugValue<Box<dyn Debug>> {
-    struct Message(String);
-
-    impl Debug for Message {
-        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-            f.write_str(&self.0)
-        }
-    }
-
-    tracing::field::debug(Box::new(Message(message.into())))
 }
