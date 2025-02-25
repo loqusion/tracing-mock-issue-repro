@@ -20,8 +20,8 @@ async fn repro_should_fail() {
 }
 
 #[tokio::test]
-#[should_panic = "[fails_as_expected]"]
-async fn fails_as_expected() {
+#[should_panic = "[fails_successfully]"]
+async fn fails_successfully() {
     let (subscriber, handle) = subscriber_mock();
 
     {
