@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 use tracing::{Level, Subscriber};
 use tracing_mock::{expect, subscriber};
 
@@ -35,7 +37,19 @@ fn subscriber_mock() -> (impl Subscriber, subscriber::MockHandle) {
         .event(
             expect::event()
                 .at_level(Level::ERROR)
-                .with_fields(expect::field("message").with_value(&"not real message")),
+                .with_fields(expect::field("message").with_value(&debug_value("not real message"))),
         )
         .run_with_handle()
+}
+
+fn debug_value(message: impl Into<String>) -> tracing::field::DebugValue<Box<dyn Debug>> {
+    struct Message(String);
+
+    impl Debug for Message {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            f.write_str(&self.0)
+        }
+    }
+
+    tracing::field::debug(Box::new(Message(message.into())))
 }
